@@ -1,9 +1,8 @@
-import { Role } from '../dto/create-user.dto';
+import { ObjectId } from 'typeorm';
 
 export interface IUSER {
-  id?: number;
+  _id?: ObjectId;
   firstname: string;
   lastname: string;
   email: string;
-  role: Role;
 }

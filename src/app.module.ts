@@ -1,23 +1,35 @@
-import { Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UserModule } from './users/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PostsModule } from './posts/posts.module';
-
+import { CustomMiddleware } from './helper/middleware/custsom-middleware';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './auth/auth.module';
+import config from './helper/config/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ 
-      envFilePath: '.env',
+    ConfigModule.forRoot({
+      cache: true,
       isGlobal: true,
+      load: [config],
     }),
     MongooseModule.forRoot(process.env.MONOG_URL),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+    }),
     UserModule,
     PostsModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [Logger],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CustomMiddleware).forRoutes('*');
+  }
+}

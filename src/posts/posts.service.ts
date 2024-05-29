@@ -8,7 +8,7 @@ export class PostsService {
     return 'This action adds a new post';
   }
 
-  findAll() {
+  async findAll() {
     return `This action returns all posts`;
   }
 

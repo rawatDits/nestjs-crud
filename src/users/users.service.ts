@@ -8,41 +8,48 @@ import { IUSER } from './interface/user-interface';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectModel(User.name)
-        private userModel : mongoose.Model<User>,
-      ) {}
-   
-    async findAll(): Promise<IUSER[]> {
-        const users = await this.userModel.find({});
-        return users;
-      }
+  constructor(
+    @InjectModel(User.name)
+    private userModel: mongoose.Model<User>,
+  ) {}
 
-    async findOne(id:number):Promise<IUSER>{
-        const user = await this.userModel.findOne({id:id});
-        return user
-    }
-    async create(creteData:CreateUserDto): Promise<IUSER>{
-        const user = await this.userModel.create(creteData);
-        return {
-                id:user.id,
-                firstname:user.firstname,
-                lastname:user.lastname,
-                email:user.email,
-                role:user.role,
-        }
-    }
+  async findAll(): Promise<IUSER[]> {
+    const users = await this.userModel.find({});
+    return users;
+  }
 
-    async update(id:number,updateUser:UpdateUserDto):Promise<IUSER>{
-        let update = await this.userModel.findOneAndUpdate({id:id}, updateUser,{new:true})
-        return update
+  async findOne(id: number): Promise<IUSER | null> {
+    try {
+      const user = await this.userModel.findOne({ id: id });
+      return user;
+    } catch (error) {
+      console.log('error');
+      throw new Error('Error fetching user');
     }
+  }
+  async create(creteData: CreateUserDto): Promise<IUSER> {
+    const user = await this.userModel.create(creteData);
+    return {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      role: user.role,
+    };
+  }
 
-    async delete(id:number) :Promise<boolean>{
-        let deleteuser = await this.userModel.deleteOne({id:id})
-        if(deleteuser.deletedCount > 0){
-            return true
-        }
-         return false;
+  async update(id: number, updateUser: UpdateUserDto): Promise<IUSER> {
+    let update = await this.userModel.findOneAndUpdate({ id: id }, updateUser, {
+      new: true,
+    });
+    return update;
+  }
+
+  async delete(id: number): Promise<boolean> {
+    let deleteuser = await this.userModel.deleteOne({ id: id });
+    if (deleteuser.deletedCount > 0) {
+      return true;
     }
+    return false;
+  }
 }
