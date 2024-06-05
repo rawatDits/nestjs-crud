@@ -23,26 +23,24 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IUSER } from './interface/user-interface';
 import { JoiValidatiaonPipe } from '../helper/pipes/joi-validation';
-import validataion from './validation/user-custom-validation';
-import { PostsService } from '../posts/posts.service';
+import {createUserSchema} from './validation/user-custom-validation';
 import { AuthGuard } from '../helper/gaurd/authentication-gaurd';
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {diskStorage} from 'multer'
 
 
-@Controller('users')
-@UseGuards(AuthGuard)
+@Controller()
+// @UseGuards(AuthGuard)
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
-    private readonly postService: PostsService,
     private configService: ConfigService,
   ) {}
 
 
   @Get()
-  async findAll(): Promise<IUSER[]> {
+  async findAll() {
     try {
       let users = await this.userService.findAll();
       return users;
@@ -60,13 +58,15 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Get('detail')
+  // @UsePipes(ParseIntPipe) // This will be implemented to all the parameters in the query
   async findOne(
-    @Req() req,
-    @Query('id', ParseIntPipe) id: number,
+    // @Query('id', new ParseIntPipe({errorHttpStatusCode:HttpStatus.NOT_ACCEPTABLE})) id: number,  == method 1
+    // @Query('id') id: number, == method 2
+    @Query('id',  ParseIntPipe) id: number,
   ): Promise<IUSER | string> {
     try {
       console.log(this.configService.get('database.connectionString'));
-      let user = await this.userService.findOne(req.query.id);
+      let user = await this.userService.findOne(id);
       return user;
     } catch (error) {
       throw new HttpException(
@@ -80,7 +80,7 @@ export class UsersController {
     }
   }
   @Post()
-  @UsePipes(new JoiValidatiaonPipe(validataion.createUser))
+  @UsePipes(new JoiValidatiaonPipe(createUserSchema))
   async create(@Body() userData: CreateUserDto): Promise<IUSER> {
     try {
       let user = await this.userService.create(userData);

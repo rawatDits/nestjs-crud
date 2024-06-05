@@ -8,7 +8,10 @@ import { CustomMiddleware } from './helper/middleware/custsom-middleware';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import config from './helper/config/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RouterModule } from '@nestjs/core';
 
+const routes = [{path:"users", module:UserModule}]
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,7 +20,6 @@ import config from './helper/config/config';
       load: [config],
     }),
     MongooseModule.forRoot(process.env.MONOG_URL),
-    // MongooseModule.forRoot("mongodb://localhost:27017/node-rest"),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
@@ -25,6 +27,7 @@ import config from './helper/config/config';
     UserModule,
     PostsModule,
     AuthModule,
+    RouterModule.register(routes)
   ],
   controllers: [AppController],
   providers: [Logger],

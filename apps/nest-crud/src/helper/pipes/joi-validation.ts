@@ -4,31 +4,22 @@ import {
   PipeTransform,
   ArgumentMetadata,
   BadRequestException,
+  HttpStatus,
 } from '@nestjs/common';
+import { ObjectSchema } from 'joi';
 
 @Injectable()
 export class JoiValidatiaonPipe implements PipeTransform {
-  constructor(private schema: any) {}
+  constructor(private schema: ObjectSchema) {}
 
-  public transform(value: any, metadata: ArgumentMetadata) {
-    try {
-      if (metadata.type == 'query') {
-        const { error } = this.schema.query.validate(value);
-        if (error) {
-          throw new BadRequestException(error.details);
-        }
-      } else if (metadata.type == 'body') {
-        const { error } = this.schema.body.validate(value);
-        if (error) {
-          const errorMessages = error.details.map((d) => d.message).join(', ');
-          throw new BadRequestException({ message: errorMessages });
-        }
-      }
-    } catch (error) {
-      throw error instanceof BadRequestException
-        ? error
-        : new BadRequestException();
+  public transform(value: Record<string, any>) {
+    const {error} = this.schema.validate(value)
+    if(error){
+      console.log("error")
+      throw new BadRequestException({message:error.message, statusCode:HttpStatus.BAD_REQUEST})
+      // throw new BadRequestException({message:error.message})
     }
-    return value;
+     return value;
+   
   }
 }
